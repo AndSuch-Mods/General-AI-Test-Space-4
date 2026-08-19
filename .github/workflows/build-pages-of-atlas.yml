@@ -1,0 +1,36 @@
+name: Build Pages of Atlas
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Set up Java 25
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'microsoft'
+
+      - name: Clone Pages of Atlas at requested commit
+        run: |
+          git clone https://github.com/mattmcbeardface/pages-of-atlas.git pages-of-atlas
+          cd pages-of-atlas
+          git checkout d2955bda188bb6b6033d746e08a44f70a55479cd
+
+      - name: Build mod
+        run: |
+          cd pages-of-atlas
+          chmod +x ./gradlew
+          ./gradlew clean build --stacktrace
+
+      - name: Upload compiled JARs
+        uses: actions/upload-artifact@v7
+        with:
+          name: pages-of-atlas-jars
+          path: pages-of-atlas/build/libs/*.jar
+          if-no-files-found: error
